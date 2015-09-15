@@ -199,6 +199,7 @@ user. That's where incremental compilation terminates in this case.
 
 Let's identify the two main pieces of information that were needed to make decisions in the examples
 presented above. The incremental compiler algorithm needs to:
+
   * index source files so it knows whether there were API changes that might affect other source
     files; e.g. it needs to detect changes to method signatures as in the example above
   * track dependencies between source files; once the change to an API is detected the algorithm
@@ -209,16 +210,18 @@ Both of those pieces of information are extracted from the Scala compiler.
 ### Interaction with the Scala compiler
 
 Incremental compiler interacts with Scala compiler in many ways:
-  * provides three phases additional phases that extract needed information:
-    - api phase extracts public interface of compiled sources by walking trees and indexing types
-    - dependency phase which extracts dependencies between source files (compilation units)
-    - analyzer phase which captures the list of emitted class files
-  * defines a custom reporter which allows sbt to gather errors and warnings
-  * subclasses Global to:
+
+  - provides three phases additional phases that extract needed information:
+    1. `api` phase extracts public interface of compiled sources by walking trees and indexing types
+    2. `dependency` phase which extracts dependencies between source files (compilation units)
+    3. `analyzer` phase which captures the list of emitted class files
+  - defines a custom reporter which allows sbt to gather errors and warnings
+  - subclasses `Global` to:
+
     - add the api, dependency and analyzer phases
     - set the custom reporter
-  * manages instances of the custom Global and uses them to compile files it determined that need
-    to be compiled
+
+  - manages instances of the custom Global and uses them to compile files it determined that need to be compiled
 
 #### API extraction phase
 
@@ -315,7 +318,7 @@ class A {
 }
 ```
 
-Once user hits save and asks incremental compiler to recompile it's project it will do the
+Once user hits save and asks incremental compiler to recompile the project it will do the
 following:
 
   1. Recompile `A.scala` as the source code has changed (first iteration)
@@ -344,8 +347,8 @@ smarter about changes that can possibly affect a small number of files.
 
 #### Detection of irrelevant dependencies (direct approach)
 
-I call call a change to API of given source file `X.scala` irrelevant if doesn't affect compilation
-result of other file `Y.scala` even if `Y.scala` does depend on `X.scala`.
+I call a change to API of given source file `X.scala` *irrelevant* if doesn't affect the compilation
+result of the other file `Y.scala` even if `Y.scala` does depend on `X.scala`.
 
 From that definition one can easily see that change can be declared irrelevant only in respect to
 given dependency. Conversely, one can declare a dependency between two source files irrelevant in
@@ -439,7 +442,7 @@ representation of the API but only its hash sum. Also, dependencies are tracked 
 level and not at class/method level.
 
 One could imagine reworking current design to track more information but it would be a very big
-undertake. Also, incremental compiler used to preserve a whole API structure but it switched to
+undertaking. Also, incremental compiler used to preserve a whole API structure but it switched to
 hashing due to infeasible memory requirements.
 
 #### Detection of irrelevant dependencies (name hashing)
